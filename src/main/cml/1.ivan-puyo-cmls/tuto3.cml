@@ -1,60 +1,72 @@
 ContextMap AeroAlpesContextMap {
-    
+    type SYSTEM_LANDSCAPE
+    state AS_IS
+
     contains VuelosContext
     contains PagosContext
     contains ClientesContext
 
-    VuelosContext [-> PagosContext] {
-        implementation TechnologyMapping
-        relationship Partnership
-        reasoning "El contexto de vuelos necesita interactuar con pagos para completar la compra de una reserva."
-    }
-
-    VuelosContext [-> ClientesContext] {
-        implementation TechnologyMapping
-        relationship Customer-Supplier
-        reasoning "El módulo de vuelos consulta información de los clientes que realizan reservas."
-    }
-
-    PagosContext [-> ClientesContext] {
-        implementation TechnologyMapping
-        relationship Partnership
-        reasoning "El sistema de pagos necesita validar los datos de los clientes antes de procesar transacciones."
-    }
+    VuelosContext [D,C]<-[U,S] PagosContext
+    VuelosContext [D,C]<-[U,S] ClientesContext
+    PagosContext [D,C]<-[U,S] ClientesContext
 }
 
 BoundedContext VuelosContext {
-    Module Reservas {
-        Aggregate Reserva {
-            Entity Reserva {
-                +id: UUID
-                +itinerario: Itinerario
-                +estado: EstadoReserva
-            }
+    Aggregate Reservas {
+        Entity Reserva {
+            aggregateRoot
+            UUID id
+            - Itinerario itinerario
+            EstadoReserva estado
+        }
+
+        ValueObject Itinerario {
+            - List<Segmento> segmentos
+            Date fechaInicio
+            Date fechaFin
+        }
+
+        ValueObject Segmento {
+            - Aeropuerto origen
+            - Aeropuerto destino
+            Date horaSalida
+            Date horaLlegada
+        }
+
+        Entity Aeropuerto {
+            String codigo
+            String nombre
+            String ciudad
+            String pais
         }
     }
 }
 
 BoundedContext PagosContext {
-    Module Transacciones {
-        Aggregate Pago {
-            Entity Pago {
-                +id: UUID
-                +monto: Decimal
-                +estado: EstadoPago
-            }
+    Aggregate Transacciones {
+        Entity Pago {
+            aggregateRoot
+            UUID id
+            Decimal monto
+            EstadoPago estado
+            - MetodoPago metodo
+        }
+
+        Entity MetodoPago {
+            UUID id
+            String tipoMetodo  // Puede ser 'TARJETA_CREDITO', 'PAYPAL', etc.
         }
     }
 }
 
 BoundedContext ClientesContext {
-    Module Usuarios {
-        Aggregate Cliente {
-            Entity Cliente {
-                +id: UUID
-                +nombre: String
-                +correo: String
-            }
+    Aggregate Usuarios {
+        Entity Cliente {
+            aggregateRoot
+            UUID id
+            String nombre
+            String correo
+            List<UUID> reservas  // Relación con las reservas
         }
     }
 }
