@@ -1,34 +1,41 @@
-/*This is the first context map to work*/
-/* This is an example input file for the 'Split Aggregate by Entities' refactoring and shows a small part of the insurance example. */
-ContextMap {
-	contains CustomerManagementContexts
+ContextMap AeroAlpesReservations {
+    contains ClientesContext
+    contains ReservasContext
 
+    // Relación de Shared Kernel entre Clientes y Reservas
+    ClientesContext [SK]<->[SK] ReservasContext
+
+    // Relación de Upstream y Downstream
+    ReservasContext [D]<-[U,OHS,PL] ClientesContext
 }
 
-BoundedContext CustomerManagementContexts {
-	type = FEATURE
-	domainVisionStatement = "The customer management context is responsible for managing all the data of the insurance companies customers."
-	implementationTechnology = "Java, JEE Application"
-	responsibilities = "Customers, Addresses"
+BoundedContext ClientesContext {
+    Module clientes {
+        basePackage = org.aeroalpes.domain.model
 
-	/* With a Right-Click on the 'Customers' aggregate you can call the 'Split Aggregate by Entities' refactoring in the 
-	 * 'Context Mapper: Refactor' context menu. The refactoring will create a new aggregate and move one of the two entities 
-	 * to the new aggregate (see the result in the 'split-aggregate-by-entities-output-example.cml' file).
-	 */	
-	Aggregate Customers {
-		Entity Customer {
-			aggregateRoot
-			
-			SocialInsuranceNumber sin
-			String firstname
-			String lastname
-			- List<Address> addresses
-		}
-		Entity Address {
-			String street
-			int postalCode
-			String city
-		}
-	}
+        Aggregate Cliente {
+            Entity Cliente {
+                String id
+                String nombre
+                String correoElectronico
+                String telefono
+            }
+        }
+    }
 }
 
+BoundedContext ReservasContext {
+    Module reservas {
+        basePackage = org.aeroalpes.domain.model
+
+        Aggregate Reserva {
+            Entity Reserva {
+                String id
+                - Cliente cliente
+                String estado
+                Date fecha
+                double precioTotal
+            }
+        }
+    }
+}
