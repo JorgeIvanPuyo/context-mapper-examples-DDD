@@ -1,0 +1,60 @@
+ContextMap AeroAlpesContextMap {
+    
+    contains VuelosContext
+    contains PagosContext
+    contains ClientesContext
+
+    VuelosContext [-> PagosContext] {
+        implementation TechnologyMapping
+        relationship Partnership
+        reasoning "El contexto de vuelos necesita interactuar con pagos para completar la compra de una reserva."
+    }
+
+    VuelosContext [-> ClientesContext] {
+        implementation TechnologyMapping
+        relationship Customer-Supplier
+        reasoning "El módulo de vuelos consulta información de los clientes que realizan reservas."
+    }
+
+    PagosContext [-> ClientesContext] {
+        implementation TechnologyMapping
+        relationship Partnership
+        reasoning "El sistema de pagos necesita validar los datos de los clientes antes de procesar transacciones."
+    }
+}
+
+BoundedContext VuelosContext {
+    Module Reservas {
+        Aggregate Reserva {
+            Entity Reserva {
+                +id: UUID
+                +itinerario: Itinerario
+                +estado: EstadoReserva
+            }
+        }
+    }
+}
+
+BoundedContext PagosContext {
+    Module Transacciones {
+        Aggregate Pago {
+            Entity Pago {
+                +id: UUID
+                +monto: Decimal
+                +estado: EstadoPago
+            }
+        }
+    }
+}
+
+BoundedContext ClientesContext {
+    Module Usuarios {
+        Aggregate Cliente {
+            Entity Cliente {
+                +id: UUID
+                +nombre: String
+                +correo: String
+            }
+        }
+    }
+}
